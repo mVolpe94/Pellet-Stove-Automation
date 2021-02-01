@@ -1,4 +1,4 @@
-# Pellet-Stove-Automation
+# Pellet Stove Automation
 A script for Raspberry Pi that can automate a pellet stove
 
 This project is currently in the prototyping phase where I am attempting to gather data by manually operating each individual part of the stove.
