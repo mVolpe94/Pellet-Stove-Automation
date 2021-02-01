@@ -19,7 +19,7 @@ flame_sensor = 20
 # gpio.setup(outgoing_air_sensor, gpio.IN)
 # gpio.setup(flame_sensor, gpio.IN)
 
-room_air_temp = 65
+
 
 class RndGui:
     def __init__(self, root):
@@ -106,8 +106,12 @@ class RndGui:
 
 
         #Read Room Temp
+        room_air_temp = IntVar()
         room_temp_label = ttk.Label(stats_frame, text=f"Room Temperature: {room_air_temp}")        
         room_temp_label.grid(column=0, row=0, sticky=W)
+
+        read_temp_button = ttk.Button(stats_frame, text="Read Temp", command=lambda: room_air_temp.set(read_temp()))
+        read_temp_button.grid(column=1, row=0, sticky=W, padx=5)
 
 def read_temp():
     temp_file = open("TestingEnvironment/temptest.txt")
