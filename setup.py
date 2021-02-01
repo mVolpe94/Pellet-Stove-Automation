@@ -19,8 +19,7 @@ room_air_temp = 65
 # IO Setup
 
 #pin numbers
-auger1 = 5
-auger2 = 6
+augers = 5
 heat_exg_blower = 13
 combustion_blower = 21
 room_air_sensor = 19

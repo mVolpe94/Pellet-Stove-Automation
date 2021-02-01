@@ -1,7 +1,25 @@
+#import RPi.GPIO as gpio
 import time, os, sys
 import mainprocess
 from tkinter import *
 from tkinter import ttk
+
+augers = 5
+heat_exg_blower = 13
+combustion_blower = 21
+room_air_sensor = 19
+outgoing_air_sensor = 26
+flame_sensor = 20
+
+#pin setup
+# gpio.setup(augers, gpio.OUT)
+# gpio.setup(heat_exg_blower, gpio.OUT)
+# gpio.setup(combustion_blower, gpio.OUT)
+# gpio.setup(room_air_sensor, gpio.IN)
+# gpio.setup(outgoing_air_sensor, gpio.IN)
+# gpio.setup(flame_sensor, gpio.IN)
+
+room_air_temp = 65
 
 class RndGui:
     def __init__(self, root):
@@ -13,6 +31,10 @@ class RndGui:
         #Main Frame
         settings_frame = ttk.Frame(root, padding="15 15 15 15")
         settings_frame.grid(column=0, row=0, sticky=(N, S, E, W))
+
+        #Stats Frame
+        stats_frame = ttk.Frame(root, padding="15 15 15 15")
+        stats_frame.grid(column=1, row=0, sticky=(N, S, E, W))
 
 
         #Auger Test
@@ -80,9 +102,22 @@ class RndGui:
         convection_blower_med.grid(column=1, row=9, padx=5, sticky=W)
 
         convection_blower_high = ttk.Button(settings_frame, text="High", command=None)
-        convection_blower_high.grid(column=2, row=9, padx=5, sticky=W)        
-        #
+        convection_blower_high.grid(column=2, row=9, padx=5, sticky=W)
 
+
+        #Read Room Temp
+        room_temp_label = ttk.Label(stats_frame, text=f"Room Temperature: {room_air_temp}")        
+        room_temp_label.grid(column=0, row=0, sticky=W)
+
+def read_temp():
+    temp_file = open("TestingEnvironment/temptest.txt")
+    lines = temp_file.readlines()
+    p = re.compile(r"[t][=](\d*)")
+    result = p.search(lines[1])
+    room_air_temp = result.group(1)
+    room_air_temp = int(room_air_temp) / 1000
+    room_air_temp = 9 / 5 * room_air_temp + 32
+    return room_air_temp
 
 
 root = Tk()
