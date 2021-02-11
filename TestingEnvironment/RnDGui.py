@@ -1,4 +1,4 @@
-import RPi.GPIO as gpio
+# import RPi.GPIO as gpio
 import time, os, sys
 import mainprocess
 from tkinter import *
@@ -13,16 +13,16 @@ outgoing_air_sensor = 26
 flame_sensor = 20
 
 #pin setup
-gpio.setup(augers, gpio.OUT)
-gpio.setup(convection_blower, gpio.OUT)
-gpio.setup(combustion_blower, gpio.OUT)
-gpio.setup(room_air_sensor, gpio.IN)
-gpio.setup(outgoing_air_sensor, gpio.IN)
-gpio.setup(flame_sensor, gpio.IN)
-
+# gpio.setup(augers, gpio.OUT)
+# gpio.setup(convection_blower, gpio.OUT)
+# gpio.setup(combustion_blower, gpio.OUT)
+# gpio.setup(room_air_sensor, gpio.IN)
+# gpio.setup(outgoing_air_sensor, gpio.IN)
+# gpio.setup(flame_sensor, gpio.IN)
 
 
 class RndGui:
+
     def __init__(self, root):
         root.title("PELLET STOVE R+D")
         root.columnconfigure(0, weight=1)
@@ -43,17 +43,17 @@ class RndGui:
         auger_label = ttk.Label(settings_frame, text='Auger Run Time:')
         auger_label.grid(column=0, row=0, sticky=W)
 
-        self.auger_time = ttk.Entry(settings_frame, width=11, textvariable=auger_run_time)
-        self.auger_time.grid(column=1, row=0, padx=5, sticky=(W,E))
+        self.auger_low = ttk.Button(settings_frame, text="Low", command=lambda: self.auger_modes(1))
+        self.auger_low.grid(column=1, row=0, padx=5, sticky=(W,E))
 
-        self.auger_button = ttk.Button(settings_frame, text="Run", command=lambda: self.auger_timer(auger_run_time.get()))
-        self.auger_button.grid(column=2, row=0, padx=5, sticky=W)
+        self.auger_medium = ttk.Button(settings_frame, text="Medium", command=lambda: self.auger_modes(2))
+        self.auger_medium.grid(column=2, row=0, padx=5, sticky=W)
 
-        auger_off_button = ttk.Button(settings_frame, text="Off", command=lambda: gpio.output(augers, False))
-        auger_off_button.grid(column=1, row=1, padx=5, sticky=W)
+        auger_off = ttk.Button(settings_frame, text="Off", command=lambda: self.auger_modes(0))
+        auger_off.grid(column=1, row=1, padx=5, sticky=W)
 
-        auger_on_button = ttk.Button(settings_frame, text="On", command=lambda: gpio.output(augers, True))
-        auger_on_button.grid(column=2, row=1, padx=5, sticky=W)
+        auger_high = ttk.Button(settings_frame, text="High", command=lambda: self.auger_modes(3))
+        auger_high.grid(column=2, row=1, padx=5, sticky=W)
 
         ttk.Separator(settings_frame, orient=HORIZONTAL).grid(row=2, pady=8, columnspan=3, sticky=(E,W))
 
@@ -101,11 +101,12 @@ class RndGui:
 
 
         #Read Room Temp
-        room_air_temp = IntVar()
-        room_temp_label = ttk.Label(stats_frame, text=f"Room Temperature: {room_air_temp}")        
+        self.room_air_temp = StringVar()
+        self.room_air_temp.set(f"Room Temperature: {self.read_temp()}")
+        room_temp_label = ttk.Label(stats_frame, textvariable=self.room_air_temp)        
         room_temp_label.grid(column=0, row=0, sticky=W)
 
-        read_temp_button = ttk.Button(stats_frame, text="Read Temp", command=lambda: room_air_temp.set(read_temp()))
+        read_temp_button = ttk.Button(stats_frame, text="Read Temp", command=self.read_temp)
         read_temp_button.grid(column=1, row=0, sticky=W, padx=5)
 
 
@@ -123,16 +124,33 @@ class RndGui:
                 gpio.output(starter, False)
 
 
+    def auger_modes(self, mode):
+        if mode == 1:
+            print(mode)
+            time.sleep(4)
+        elif mode == 2:
+            print(mode)
+            time.sleep(3)
+        elif mode == 3:
+            print(mode)
+            time.sleep(2)
+        else:
+            gpio.output(augers, False)
 
-def read_temp():
-    temp_file = open("TestingEnvironment/temptest.txt")
-    lines = temp_file.readlines()
-    p = re.compile(r"[t][=](\d*)")
-    result = p.search(lines[1])
-    room_air_temp = result.group(1)
-    room_air_temp = int(room_air_temp) / 1000
-    room_air_temp = 9 / 5 * room_air_temp + 32
-    return room_air_temp
+
+
+    def read_temp(self):
+        #REPLACE PATH WITH PI PATH TO
+        temp_file = open("TestingEnvironment/temptest.txt")
+        lines = temp_file.readlines()
+        p = re.compile(r"[t][=](\d*)")
+        result = p.search(lines[1])
+        
+        room_air = result.group(1)
+        room_air = int(room_air) / 1000
+        room_air = 9 / 5 * room_air + 32
+        self.room_air_temp.set(f"Room Temperature: {room_air}")
+        return room_air
 
 
 root = Tk()
