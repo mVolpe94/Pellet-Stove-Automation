@@ -100,6 +100,8 @@ class RndGui:
         convection_blower_on.grid(column=2, row=8, padx=5, sticky=W)
 
 
+        ttk.Separator(settings_frame, orient=VERTICAL).grid(column=3, row=0, rowspan=9, padx=10, sticky=(N,S))
+
         #Read Room Temp
         self.room_air_temp = StringVar()
         self.room_air_temp.set(f"Room Temperature: {self.read_temp()}")
@@ -138,14 +140,12 @@ class RndGui:
             gpio.output(augers, False)
 
 
-
     def read_temp(self):
         #REPLACE PATH WITH PI PATH TO
         temp_file = open("TestingEnvironment/temptest.txt")
         lines = temp_file.readlines()
         p = re.compile(r"[t][=](\d*)")
         result = p.search(lines[1])
-        
         room_air = result.group(1)
         room_air = int(room_air) / 1000
         room_air = 9 / 5 * room_air + 32
