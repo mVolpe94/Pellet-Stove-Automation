@@ -1,4 +1,5 @@
-import mainprocess, os
+import mainprocess
+import os
 from multiprocessing import Process, Pipe
 
 # to use multiple pipes with one function, must define new connection names 
