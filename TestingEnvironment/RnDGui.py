@@ -1,5 +1,7 @@
 # import RPi.GPIO as gpio
-import time, os, sys
+import time, os, sys, re
+import matplotlib.pyplot as plt
+import utility
 import mainprocess
 from tkinter import *
 from tkinter import ttk
@@ -11,6 +13,8 @@ combustion_blower = 21
 room_air_sensor = 19
 outgoing_air_sensor = 26
 flame_sensor = 20
+
+
 
 #pin setup
 # gpio.setup(augers, gpio.OUT)
@@ -25,22 +29,19 @@ running = None
 
 class RndGui:
 
-    def __init__(self, root, running):
+    def __init__(self, root, auger_running):
 
-        self.running = running
+        self.auger_running = auger_running
 
         root.title("PELLET STOVE R+D")
         root.columnconfigure(0, weight=1)
         root.rowconfigure(0, weight=1)
 
+############### Main Frame
 
         #Main Frame
         settings_frame = ttk.Frame(root, padding="15 15 15 15")
         settings_frame.grid(column=0, row=0, sticky=(N, S, E, W))
-
-        #Stats Frame
-        stats_frame = ttk.Frame(root, padding="15 15 15 15")
-        stats_frame.grid(column=1, row=0, sticky=(N, S, E, W))
 
 
         #Auger Test
@@ -143,6 +144,12 @@ class RndGui:
 
         ttk.Separator(settings_frame, orient=VERTICAL).grid(column=3, row=0, rowspan=9, padx=10, sticky=(N,S))
 
+############### Stats Frame
+
+        #Stats Frame
+        stats_frame = ttk.Frame(root, padding="15 15 15 15")
+        stats_frame.grid(column=1, row=0, sticky=(N, S, E, W))
+
         #Read Room Temp
         self.room_air_temp = StringVar()
         self.room_air_temp.set(f"Room Temperature: {self.read_temp()}")
@@ -152,12 +159,19 @@ class RndGui:
         read_temp_button = ttk.Button(stats_frame, text="Read Temp", command=self.read_temp)
         read_temp_button.grid(column=1, row=0, sticky=W, padx=5)
 
+        auto_graph_button = ttk.Button(stats_frame, text="Auto Graph", command=lambda: self.graph_it(time_list, temp_list))
+        auto_graph_button.grid(column=1, row=1, sticky=W, padx=5)
 
-    def auger_timer(self, sec):
-            start_time = time.time()
-            gpio.output(augers, True)
-            if start_time > time.time() + sec:
-                gpio.output(augers, False)
+        ttk.Separator(stats_frame, orient=HORIZONTAL).grid(column=0, row=2, pady=8, columnspan=2, sticky=(W,E))
+
+        self.auger_state = StringVar()
+        auger_speed = ttk.Label(stats_frame, text=f"Auger Speed: {}")
+
+#     def auger_timer(self, sec):
+#             start_time = time.time()
+#             gpio.output(augers, True)
+#             if start_time > time.time() + sec:
+#                 gpio.output(augers, False)
 
     
     def starter_timer(self, sec):
@@ -171,13 +185,13 @@ class RndGui:
             if not power:
                 if power == "OFF":
                     print("OOOOOOFFFFFF")
-                    self.afterkill(self.running)
+                    self.afterkill(self.auger_running)
                     return None
                 print("auger on")
                 print(time)
                 power = True
                 ms = 5000 - time
-                self.running = root.after(ms, self.auger_modes, time, power)
+                self.auger_running = root.after(ms, self.auger_modes, time, power)
             elif power:
                 if power == "OFF":
                     print("OOOOOOFFFFFF")
@@ -186,7 +200,7 @@ class RndGui:
                 print('auger off')
                 print(time)
                 power = False
-                self.running = root.after(time, self.auger_modes, time, power)
+                self.auger_running = root.after(time, self.auger_modes, time, power)
 
 
     def afterkill(self, function):
@@ -207,6 +221,7 @@ class RndGui:
         room_air = 9 / 5 * room_air + 32
         self.room_air_temp.set(f"Room Temperature: {room_air}")
         return room_air
+        
 
 
 root = Tk()
